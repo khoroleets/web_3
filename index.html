@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Garden Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2ECC71',
+                        secondary: '#3498DB',
+                        neutralText: '#333333',
+                        neutralBg: '#F4F6F8',
+                        neutralWhite: '#FFFFFF',
+                        darkBg: '#121212',
+                        darkSurface: '#312E2E',
+                        darkText: '#FFFFFF',
+                        modeOff: '#D9D9D9',
+                        modalRed: '#FF0000',
+                        modalDarkRed: '#BC0404',
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    backgroundImage: {
+                        'brand-radial': 'radial-gradient(circle, #2ECC71 0%, #3498DB 100%)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { transition: background-color 0.3s, color 0.3s; }
+        .card-transition { transition: all 0.3s ease; }
+    </style>
+</head>
+
+<body class="bg-neutralBg dark:bg-darkBg text-neutralText dark:text-darkText font-sans min-h-screen flex flex-col lg:flex-row">
+
+    <header class="lg:hidden flex items-center justify-between p-4 bg-neutralWhite dark:bg-darkSurface shadow-sm z-30 relative">
+        <h1 class="text-xl font-bold bg-brand-radial bg-clip-text text-transparent">Smart Garden</h1>
+        <button onclick="toggleMenu()" class="text-2xl text-gray-600 dark:text-white p-2 focus:outline-none hover:opacity-80 transition">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <div id="mobile-overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <aside id="sidebar" class="w-64 bg-neutralWhite dark:bg-darkSurface shadow-2xl lg:shadow-md fixed inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 lg:h-full z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out">
+        <div class="p-4">
+            <h1 class="text-2xl font-bold bg-brand-radial bg-clip-text text-transparent mb-8 px-4 py-2">Smart Garden</h1>
+            
+            <nav class="flex flex-col gap-2">
+                <a href="#" onclick="switchPage('dashboard')" id="nav-dashboard" class="flex items-center px-4 py-3 bg-blue-50 dark:bg-gray-800 text-secondary rounded-lg font-semibold transition nav-item">
+                    <span class="w-8">🏠</span> Головна
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-neutralText dark:text-darkText hover:text-secondary dark:hover:text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition nav-item">
+                    <span class="w-8">📊</span> Статистика
+                </a>
+                <a href="#" onclick="switchPage('settings')" id="nav-settings" class="flex items-center px-4 py-3 text-neutralText dark:text-darkText hover:text-secondary dark:hover:text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition nav-item">
+                    <span class="w-8">⚙️</span> Налаштування
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-neutralText dark:text-darkText hover:text-secondary dark:hover:text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition mt-4 opacity-80 cursor-default">
+                    <span class="w-8">🚪</span> Вхід
+                </a>
+            </nav>
+        </div>
+        
+        <div class="p-4 mb-4">
+             <div onclick="toggleDarkMode()" class="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                 <span class="text-sm font-medium">Dark Mode</span>
+                 <div class="w-10 h-6 bg-modeOff dark:bg-primary rounded-full relative flex items-center">
+                     <div id="theme-knob" class="absolute left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"></div>
+                 </div>
+             </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 lg:ml-64 p-4 lg:p-8">
+
+        <div id="page-dashboard" class="block">
+            <header class="mb-8">
+                <h2 class="text-2xl font-bold">Огляд системи</h2>
+            </header>
+
+            <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+                <article class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm card-transition flex items-center gap-4">
+                    <div class="w-3 h-3 bg-primary rounded-sm"></div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Тиск води</h3>
+                        <p class="text-xl font-bold">4.5 Bar</p>
+                    </div>
+                </article>
+
+                <article onclick="openModal()" class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm card-transition flex items-center gap-4 cursor-pointer hover:ring-2 ring-primary">
+                    <div class="w-3 h-3 bg-primary rounded-sm"></div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Сектор 1</h3>
+                        <p class="text-xl font-bold">Активний</p>
+                    </div>
+                </article>
+
+                <article class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm card-transition flex items-center gap-4">
+                    <div class="w-3 h-3 bg-primary rounded-sm"></div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Вологість ґрунту</h3>
+                        <p class="text-xl font-bold">65%</p>
+                    </div>
+                </article>
+
+                <article class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm card-transition flex items-center gap-4">
+                    <div class="w-3 h-3 bg-primary rounded-sm"></div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Витрата води</h3>
+                        <p class="text-xl font-bold">120 л/хв</p>
+                    </div>
+                </article>
+            </section>
+
+            <section class="mb-6">
+                <div class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm card-transition w-full">
+                    <h3 class="text-lg font-bold mb-8">Статистика споживання води</h3>
+                    
+                    <div class="h-48 flex items-end justify-between border-b border-gray-200 dark:border-gray-700 gap-2 sm:gap-4 px-2 sm:px-4">
+                        
+                        <div class="flex flex-col items-center justify-end h-full flex-1 group relative">
+                            <span class="text-xs font-bold mb-2 opacity-80">40m³</span>
+                            <div class="w-full max-w-[40px] bg-secondary rounded-t-md group-hover:opacity-80 transition-all duration-300" style="height: 40%;"></div>
+                            <span class="absolute -bottom-7 text-sm text-gray-500 font-medium">Пн</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center justify-end h-full flex-1 group relative">
+                            <span class="text-xs font-bold mb-2 opacity-80">65m³</span>
+                            <div class="w-full max-w-[40px] bg-secondary rounded-t-md group-hover:opacity-80 transition-all duration-300" style="height: 65%;"></div>
+                            <span class="absolute -bottom-7 text-sm text-gray-500 font-medium">Вт</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center justify-end h-full flex-1 group relative">
+                            <span class="text-xs font-bold mb-2 opacity-80">80m³</span>
+                            <div class="w-full max-w-[40px] bg-secondary rounded-t-md group-hover:opacity-80 transition-all duration-300" style="height: 80%;"></div>
+                            <span class="absolute -bottom-7 text-sm text-gray-500 font-medium">Ср</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center justify-end h-full flex-1 group relative">
+                            <span class="text-xs font-bold mb-2 opacity-80">45m³</span>
+                            <div class="w-full max-w-[40px] bg-secondary rounded-t-md group-hover:opacity-80 transition-all duration-300" style="height: 45%;"></div>
+                            <span class="absolute -bottom-7 text-sm text-gray-500 font-medium">Чт</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center justify-end h-full flex-1 group relative">
+                            <span class="text-xs font-bold mb-2 opacity-80">75m³</span>
+                            <div class="w-full max-w-[40px] bg-secondary rounded-t-md group-hover:opacity-80 transition-all duration-300" style="height: 75%;"></div>
+                            <span class="absolute -bottom-7 text-sm text-gray-500 font-medium">Пт</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center justify-end h-full flex-1 group relative">
+                            <span class="text-xs font-bold mb-2 opacity-80">30m³</span>
+                            <div class="w-full max-w-[40px] bg-secondary rounded-t-md group-hover:opacity-80 transition-all duration-300" style="height: 30%;"></div>
+                            <span class="absolute -bottom-7 text-sm text-gray-500 font-medium">Сб</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-center justify-end h-full flex-1 group relative">
+                            <span class="text-xs font-bold mb-2 opacity-80">70m³</span>
+                            <div class="w-full max-w-[40px] bg-secondary rounded-t-md group-hover:opacity-80 transition-all duration-300" style="height: 70%;"></div>
+                            <span class="absolute -bottom-7 text-sm text-gray-500 font-medium">Нд</span>
+                        </div>
+                    </div>
+                    <div class="h-8"></div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <div class="lg:col-span-2 bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm card-transition flex flex-col justify-between">
+                    <h3 class="text-lg font-bold mb-4 text-center">Графік якості та вологості</h3>
+                    <div class="h-32 w-full relative mb-4">
+                        <svg viewBox="0 0 100 40" class="w-full h-full" preserveAspectRatio="none">
+                            <line x1="0" y1="10" x2="100" y2="10" stroke="#888" stroke-width="0.2" opacity="0.3"/>
+                            <line x1="0" y1="20" x2="100" y2="20" stroke="#888" stroke-width="0.2" opacity="0.3"/>
+                            <line x1="0" y1="30" x2="100" y2="30" stroke="#888" stroke-width="0.2" opacity="0.3"/>
+                            
+                            <path d="M0,25 C 25,0 60,40 100,10" fill="none" stroke="#3498DB" stroke-width="1.5"/>
+                            <path d="M0,28 C 25,3 60,43 100,13" fill="none" stroke="#2ECC71" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="flex justify-center gap-8 text-sm font-medium">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 bg-primary rounded-sm"></span>
+                            <span>Якість газону</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 bg-secondary rounded-sm"></span>
+                            <span>Вологість, %</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-1 flex flex-col items-center justify-center min-h-[250px]">
+                    
+                    <div class="relative w-60 h-60 flex items-center justify-center">
+                        <svg class="absolute inset-0 w-full h-full drop-shadow-sm" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="44" fill="none" stroke="#2ECC71" stroke-width="8"
+                                    stroke-linecap="round" stroke-dasharray="207 276" 
+                                    class="transform origin-center transition-all duration-1000" />
+                        </svg>
+                        
+                        <div class="flex flex-col items-center justify-center z-10 mt-1">
+                            <time class="text-3xl font-bold text-gray-800 dark:text-white">04:30</time>
+                            <span class="text-xs text-gray-500 mt-1">До поливу</span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <div id="page-settings" class="hidden h-[80vh] flex-col items-center justify-center text-center">
+            <h2 class="text-3xl font-bold mb-2">Налаштування</h2>
+            <p class="text-gray-500">Тут будуть налаштування системи</p>
+        </div>
+
+    </main>
+
+    <div id="myModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white dark:bg-darkSurface rounded-2xl shadow-2xl w-80 p-6 relative flex flex-col items-center text-center">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <h3 class="text-xl font-bold mt-4 text-gray-800 dark:text-white">Налаштування Сектора 1</h3>
+            <p class="text-lg text-gray-600 dark:text-gray-300 mt-1 mb-6">Статус: Активний</p>
+            
+            <button onclick="closeModal()" class="bg-modalRed hover:bg-modalDarkRed text-white font-bold py-3 px-8 rounded-full text-lg transition-colors duration-300 w-full shadow-md">
+                Вимкнути полив
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Темна тема
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const knob = document.getElementById('theme-knob');
+            
+            html.classList.toggle('dark');
+            if(html.classList.contains('dark')) {
+                knob.classList.add('translate-x-4');
+            } else {
+                knob.classList.remove('translate-x-4');
+            }
+        }
+
+        // Перемикання сторінок
+        function switchPage(pageId) {
+            document.getElementById('page-dashboard').classList.add('hidden');
+            document.getElementById('page-settings').classList.add('hidden');
+            document.getElementById('page-settings').classList.remove('flex');
+            
+            const baseClass = "flex items-center px-4 py-3 text-neutralText dark:text-darkText hover:text-secondary dark:hover:text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition nav-item";
+            document.getElementById('nav-dashboard').className = baseClass;
+            document.getElementById('nav-settings').className = baseClass;
+
+            const activeClass = "flex items-center px-4 py-3 bg-blue-50 dark:bg-gray-800 text-secondary rounded-lg font-semibold transition nav-item";
+
+            if(pageId === 'dashboard') {
+                document.getElementById('page-dashboard').classList.remove('hidden');
+                document.getElementById('nav-dashboard').className = activeClass;
+            } else if (pageId === 'settings') {
+                document.getElementById('page-settings').classList.remove('hidden');
+                document.getElementById('page-settings').classList.add('flex');
+                document.getElementById('nav-settings').className = activeClass;
+            }
+        }
+
+        // Модальне вікно
+        function openModal() {
+            document.getElementById('myModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('myModal').classList.add('hidden');
+        }
+
+        // Відкриття/закриття мобільного меню
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
