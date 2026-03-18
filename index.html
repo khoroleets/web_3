@@ -8,8 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+	<script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -36,6 +37,7 @@
             }
         }
     </script>
+	
     <style>
         body { transition: background-color 0.3s, color 0.3s; }
         .card-transition { transition: all 0.3s ease; }
@@ -55,7 +57,9 @@
 
     <aside id="sidebar" class="w-64 bg-neutralWhite dark:bg-darkSurface shadow-2xl lg:shadow-md fixed inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 lg:h-full z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out">
         <div class="p-4">
-            <h1 class="text-2xl font-bold bg-brand-radial bg-clip-text text-transparent mb-8 px-4 py-2">Smart Garden</h1>
+            <h1 id="system-name" class="text-2xl font-bold bg-brand-radial bg-clip-text text-transparent mb-8 px-4 py-2">
+                Smart Garden
+            </h1>
             
             <nav class="flex flex-col gap-2">
                 <a href="#" onclick="switchPage('dashboard')" id="nav-dashboard" class="flex items-center px-4 py-3 bg-blue-50 dark:bg-gray-800 text-secondary rounded-lg font-semibold transition nav-item">
@@ -95,15 +99,15 @@
                     <div class="w-3 h-3 bg-primary rounded-sm"></div>
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Тиск води</h3>
-                        <p class="text-xl font-bold">4.5 Bar</p>
+                        <p id="water-pressure" class="text-xl font-bold">4.5 Bar</p>
                     </div>
                 </article>
 
-                <article onclick="openModal()" class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm card-transition flex items-center gap-4 cursor-pointer hover:ring-2 ring-primary">
-                    <div class="w-3 h-3 bg-primary rounded-sm"></div>
+                <article id="sector-card" onclick="openModal()" class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm card-transition flex items-center gap-4 cursor-pointer hover:ring-2 ring-primary">
+                    <div id="sector-indicator" class="w-3 h-3 bg-primary rounded-sm"></div>
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Сектор 1</h3>
-                        <p class="text-xl font-bold">Активний</p>
+                        <p id="sector-status" class="text-xl font-bold">Активний</p>
                     </div>
                 </article>
 
@@ -111,7 +115,7 @@
                     <div class="w-3 h-3 bg-primary rounded-sm"></div>
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Вологість ґрунту</h3>
-                        <p class="text-xl font-bold">65%</p>
+                        <p id="soil-moisture" class="text-xl font-bold">65%</p>
                     </div>
                 </article>
 
@@ -119,7 +123,7 @@
                     <div class="w-3 h-3 bg-primary rounded-sm"></div>
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Витрата води</h3>
-                        <p class="text-xl font-bold">120 л/хв</p>
+                        <p id="water-flow" class="text-xl font-bold">120 л/хв</p>
                     </div>
                 </article>
             </section>
@@ -212,19 +216,112 @@
                         </svg>
                         
                         <div class="flex flex-col items-center justify-center z-10 mt-1">
-                            <time class="text-3xl font-bold text-gray-800 dark:text-white">04:30</time>
+                            <time id="next-watering-time" class="text-3xl font-bold text-gray-800 dark:text-white">04:30</time>
                             <span class="text-xs text-gray-500 mt-1">До поливу</span>
                         </div>
                     </div>
 
                 </div>
             </section>
+			
+		    <section class="mt-6">
+				<div class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm">
+					<h3 class="text-lg font-bold mb-4">Графік вологості ґрунту</h3>
+					<div class="relative h-80">
+						<canvas id="sensorChart"></canvas>
+					</div>
+				</div>
+			</section>
+			
+			<section class="mt-6">
+			<div class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm card-transition">
+				<div class="flex items-center justify-between mb-4">
+					<h3 class="text-lg font-bold">Журнал подій</h3>
+					<button
+						id="clear-logs-btn"
+						type="button"
+						class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-sm font-medium hover:opacity-80 transition"
+					>
+						Очистити
+					</button>
+				</div>
+
+				<ul id="event-log" class="space-y-2 text-sm">
+					<li class="text-gray-500">Система готова до роботи</li>
+				</ul>
+			</div>
+		</section>
+			
         </div>
 
-        <div id="page-settings" class="hidden h-[80vh] flex-col items-center justify-center text-center">
-            <h2 class="text-3xl font-bold mb-2">Налаштування</h2>
-            <p class="text-gray-500">Тут будуть налаштування системи</p>
-        </div>
+        <div id="page-settings" class="hidden min-h-[80vh] flex-col items-center justify-center">
+    <div class="bg-neutralWhite dark:bg-darkSurface p-6 rounded-xl shadow-sm w-full max-w-2xl">
+        <h2 class="text-3xl font-bold mb-6 text-center">Налаштування</h2>
+
+        <form id="settings-form" class="space-y-5">
+            <div>
+                <label for="deviceName" class="block mb-2 font-medium">Назва пристрою</label>
+                <input
+                    type="text"
+                    id="deviceName"
+                    name="deviceName"
+                    value="Smart Garden"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 outline-none"
+                >
+            </div>
+
+            <div>
+                <label for="maxTemperature" class="block mb-2 font-medium">Максимально допустима температура (°C)</label>
+                <input
+                    type="number"
+                    id="maxTemperature"
+                    name="maxTemperature"
+                    value="30"
+                    min="10"
+                    max="60"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 outline-none"
+                >
+            </div>
+
+            <div>
+                <label for="updateInterval" class="block mb-2 font-medium">Інтервал оновлення даних (мс)</label>
+                <input
+                    type="number"
+                    id="updateInterval"
+                    name="updateInterval"
+                    value="3000"
+                    min="1000"
+                    max="10000"
+                    step="500"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 outline-none"
+                >
+            </div>
+
+            <div class="flex items-center gap-3">
+                <input type="checkbox" id="autoMode" name="autoMode" checked class="w-4 h-4">
+                <label for="autoMode" class="font-medium">Автоматичний режим</label>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button
+                    type="submit"
+                    class="bg-primary hover:opacity-90 text-white font-bold py-3 px-6 rounded-lg transition"
+                >
+                    Save
+                </button>
+
+                <button
+                    type="reset"
+                    class="bg-gray-300 hover:bg-gray-400 text-black font-bold py-3 px-6 rounded-lg transition"
+                >
+                    Reset
+                </button>
+            </div>
+
+            <p id="settings-message" class="text-sm font-medium hidden"></p>
+        </form>
+    </div>
+</div>
 
     </main>
 
@@ -235,67 +332,15 @@
             </button>
             
             <h3 class="text-xl font-bold mt-4 text-gray-800 dark:text-white">Налаштування Сектора 1</h3>
-            <p class="text-lg text-gray-600 dark:text-gray-300 mt-1 mb-6">Статус: Активний</p>
+            <p id="modal-sector-status" class="text-lg text-gray-600 dark:text-gray-300 mt-1 mb-6">Статус: Активний</p>
             
-            <button onclick="closeModal()" class="bg-modalRed hover:bg-modalDarkRed text-white font-bold py-3 px-8 rounded-full text-lg transition-colors duration-300 w-full shadow-md">
+            <button id="toggle-sector-btn" type="button" class="bg-modalRed hover:bg-modalDarkRed text-white font-bold py-3 px-8 rounded-full text-lg transition-colors duration-300 w-full shadow-md">
                 Вимкнути полив
             </button>
         </div>
     </div>
 
-    <script>
-        // Темна тема
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const knob = document.getElementById('theme-knob');
-            
-            html.classList.toggle('dark');
-            if(html.classList.contains('dark')) {
-                knob.classList.add('translate-x-4');
-            } else {
-                knob.classList.remove('translate-x-4');
-            }
-        }
-
-        // Перемикання сторінок
-        function switchPage(pageId) {
-            document.getElementById('page-dashboard').classList.add('hidden');
-            document.getElementById('page-settings').classList.add('hidden');
-            document.getElementById('page-settings').classList.remove('flex');
-            
-            const baseClass = "flex items-center px-4 py-3 text-neutralText dark:text-darkText hover:text-secondary dark:hover:text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition nav-item";
-            document.getElementById('nav-dashboard').className = baseClass;
-            document.getElementById('nav-settings').className = baseClass;
-
-            const activeClass = "flex items-center px-4 py-3 bg-blue-50 dark:bg-gray-800 text-secondary rounded-lg font-semibold transition nav-item";
-
-            if(pageId === 'dashboard') {
-                document.getElementById('page-dashboard').classList.remove('hidden');
-                document.getElementById('nav-dashboard').className = activeClass;
-            } else if (pageId === 'settings') {
-                document.getElementById('page-settings').classList.remove('hidden');
-                document.getElementById('page-settings').classList.add('flex');
-                document.getElementById('nav-settings').className = activeClass;
-            }
-        }
-
-        // Модальне вікно
-        function openModal() {
-            document.getElementById('myModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('myModal').classList.add('hidden');
-        }
-
-        // Відкриття/закриття мобільного меню
-        function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobile-overlay');
-            
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
-        }
-    </script>
+    <script src="script.js"></script>
+	
 </body>
 </html>
